@@ -25,7 +25,7 @@ if-shell -b 'which -s tmux-tomato' {
 ### And it looks like this
 
 ```
- 14m46s ▘ 2024-02-14 01:40
+ 14m46s ■■■□ ▘ 2024-02-14 01:40
 ```
 
 ### Set egg timer

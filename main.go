@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -16,6 +17,16 @@ type state struct {
 
 // states is a list of states that the timer cycles through.
 var states = []state{
+	{
+		duration: 25 * time.Minute,
+		color:    203,
+		icon:     "▘",
+	},
+	{
+		duration: 5 * time.Minute,
+		color:    191,
+		icon:     "▖",
+	},
 	{
 		duration: 25 * time.Minute,
 		color:    203,
@@ -61,16 +72,18 @@ func main() {
 	progressInCurrentCycle := timeSinceMidnight % totalStateDuration
 
 	var (
+		progress int
 		curState state
 		timeLeft time.Duration
 	)
 
 	var accStateDur time.Duration
 
-	for _, s := range states {
+	for n, s := range states {
 		accStateDur += s.duration
 
 		if progressInCurrentCycle <= accStateDur {
+			progress = n + 1
 			curState = s
 			timeLeft = accStateDur - progressInCurrentCycle
 			break
@@ -78,8 +91,9 @@ func main() {
 	}
 
 	timeLeft = timeLeft.Truncate(time.Second)
+	progressStr := strings.Repeat("■", progress) + strings.Repeat("□", len(states)-progress)
 
-	fmt.Printf("#[fg=color%d,bg=default]%s %s#[default]", curState.color, timeLeft, curState.icon)
+	fmt.Printf("#[fg=color%d,bg=default]%s %s %s#[default]", curState.color, timeLeft, progressStr, curState.icon)
 }
 
 func eggTimer(now time.Time) (timeLeft time.Duration, active bool) {
