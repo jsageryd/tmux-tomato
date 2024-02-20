@@ -22,12 +22,6 @@ if-shell -b 'which -s tmux-tomato' {
 }
 ```
 
-### And it looks like this
-
-```
- 14m46s ■■■□ ▘ 2024-02-14 01:40
-```
-
 ### Set egg timer
 
 There is an egg timer mode for ad-hoc timing. Use it like this:
@@ -42,3 +36,14 @@ Or alias to `tt` for speedy egg timing:
 $ alias tt=tmux-tomato
 $ tt 9m30s
 ```
+
+## Examples
+
+### Normal mode
+<img src="img/state-01.png" width="290px">
+<img src="img/state-02.png" width="290px">
+<img src="img/state-03.png" width="290px">
+<img src="img/state-04.png" width="290px">
+
+### Egg timer
+<img src="img/state-egg.png" width="290px">
