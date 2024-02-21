@@ -14,7 +14,12 @@ $ go install github.com/jsageryd/tmux-tomato@latest
 
 ### Configure tmux
 
+`tmux-tomato` without arguments prints the state and time left. I configure the
+status bar like this:
+
 ```tmux
+set -g status-style bg=colour236,fg=colour246
+
 if-shell -b 'which -s tmux-tomato' {
   set -g status-right '#(tmux-tomato)#[fg=colour231,bg=colour240] %Y-%m-%d %H:%M '
 } {
