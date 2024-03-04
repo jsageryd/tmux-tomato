@@ -93,7 +93,15 @@ func main() {
 	timeLeft = timeLeft.Truncate(time.Second)
 	progressStr := strings.Repeat("■", progress) + strings.Repeat("□", len(states)-progress)
 
-	fmt.Printf("#[fg=color%d,bg=default]%s %s %s#[default]", curState.color, timeLeft, progressStr, curState.icon)
+	fgColor := fmt.Sprintf("color%d", curState.color)
+	bgColor := "default"
+
+	if timeLeft < 30*time.Second {
+		bgColor = fgColor
+		fgColor = "color0"
+	}
+
+	fmt.Printf("#[fg=%s,bg=%s]%s %s %s#[default]", fgColor, bgColor, timeLeft, progressStr, curState.icon)
 }
 
 func eggTimer(now time.Time) (timeLeft time.Duration, active bool) {
