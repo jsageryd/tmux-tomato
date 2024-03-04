@@ -54,7 +54,7 @@ func main() {
 
 	if timeLeft, active := eggTimer(now); active {
 		if len(os.Args) < 2 {
-			fmt.Printf("#[fg=color%d,bg=default]%s %s#[default]", eggTimerColor, timeLeft, eggTimerIcon)
+			fmt.Printf("#[fg=color%d,bg=default] %s %s#[default]", eggTimerColor, timeLeft, eggTimerIcon)
 		}
 		return
 	}
@@ -101,7 +101,7 @@ func main() {
 		fgColor = "color0"
 	}
 
-	fmt.Printf("#[fg=%s,bg=%s]%s %s %s#[default]", fgColor, bgColor, timeLeft, progressStr, curState.icon)
+	fmt.Printf("#[fg=%s,bg=%s] %s %s %s#[default]", fgColor, bgColor, timeLeft, progressStr, curState.icon)
 }
 
 func eggTimer(now time.Time) (timeLeft time.Duration, active bool) {
