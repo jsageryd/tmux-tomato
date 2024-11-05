@@ -125,7 +125,7 @@ func eggTimer(now time.Time) (timeLeft time.Duration, active bool) {
 		os.Exit(1)
 	}
 
-	stateFile := filepath.Join(home, ".tmux-tomato")
+	stateFile := filepath.Join(home, ".tmux-tomato", "timer")
 
 	if len(os.Args) == 2 {
 		duration, err := time.ParseDuration(os.Args[1])
@@ -142,6 +142,11 @@ func eggTimer(now time.Time) (timeLeft time.Duration, active bool) {
 		b, err := json.Marshal(ts)
 		if err != nil {
 			fmt.Printf("error marshalling egg timer state: %v\n", err)
+			os.Exit(1)
+		}
+
+		if err := os.MkdirAll(filepath.Dir(stateFile), 0o777); err != nil {
+			fmt.Printf("error creating directory %s: %v\n", filepath.Dir(stateFile), err)
 			os.Exit(1)
 		}
 
@@ -163,6 +168,12 @@ func eggTimer(now time.Time) (timeLeft time.Duration, active bool) {
 						os.Exit(1)
 					}
 				}
+
+				// Try to remove the directory as well in case it's empty. I found no
+				// good cross-platform way to check for syscall.ENOTEMPTY which is what
+				// is returned if the directory is not empty, so this just ignores all
+				// errors instead. Good enough.
+				os.Remove(filepath.Dir(stateFile))
 			}
 		}
 	}
