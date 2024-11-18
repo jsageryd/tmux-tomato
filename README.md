@@ -27,7 +27,7 @@ if-shell -b 'which -s tmux-tomato' {
 }
 ```
 
-### Set egg timer
+### Set egg timer (optional)
 
 There is an egg timer mode for ad-hoc timing. Use it like this:
 
