@@ -56,62 +56,7 @@ type eggTimerState struct {
 func main() {
 	now := time.Now()
 
-	if timeLeft, active := eggTimer(now); active {
-		if len(os.Args) < 2 {
-			fgColor := fmt.Sprintf("color%d", eggTimerColor)
-			bgColor := "default"
-
-			if timeLeft < 30*time.Second {
-				bgColor = fgColor
-				fgColor = "color0"
-			}
-
-			fmt.Printf(" #[fg=%s,bg=%s] %s %s#[default]\n", fgColor, bgColor, timeLeft, eggTimerIcon)
-		}
-		return
-	}
-
-	timeSinceMidnight := now.Sub(
-		time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local),
-	)
-
-	var totalStateDuration time.Duration
-
-	for _, s := range states {
-		totalStateDuration += s.duration
-	}
-
-	progressInCurrentCycle := timeSinceMidnight % totalStateDuration
-
-	var (
-		progress int
-		curState state
-		timeLeft time.Duration
-	)
-
-	var accStateDur time.Duration
-
-	for n, s := range states {
-		accStateDur += s.duration
-
-		if progressInCurrentCycle <= accStateDur {
-			progress = n + 1
-			curState = s
-			timeLeft = accStateDur - progressInCurrentCycle
-			break
-		}
-	}
-
-	timeLeft = timeLeft.Truncate(time.Second)
-	progressStr := strings.Repeat("■", progress) + strings.Repeat("□", len(states)-progress)
-
-	fgColor := fmt.Sprintf("color%d", curState.color)
-	bgColor := "default"
-
-	if timeLeft < 30*time.Second {
-		bgColor = fgColor
-		fgColor = "color0"
-	}
+	var blockStr string
 
 	blockFGColor := fmt.Sprintf("color%d", 255)
 	blockBGColor := "default"
@@ -119,30 +64,26 @@ func main() {
 	nextBlockFGColor := fmt.Sprintf("color%d", 250)
 	nextBlockBGColor := "default"
 
-	hhmmString := func(d time.Duration) string {
-		haveHours := int(d.Hours()) > 0
-		haveMinutes := int(d.Minutes())%60 > 0
-		haveSeconds := int(d.Seconds())%60 > 0
-
-		switch {
-		case haveHours && haveMinutes:
-			return fmt.Sprintf("%dh%dm", int(d.Hours()), int(d.Minutes())%60)
-		case haveHours && !haveMinutes:
-			return fmt.Sprintf("%dh", int(d.Hours()))
-		case !haveHours && haveMinutes:
-			return fmt.Sprintf("%dm", int(d.Minutes())%60)
-		case !haveHours && !haveMinutes && haveSeconds:
-			return fmt.Sprintf("%ds", int(d.Seconds())%60)
-		default:
-			return "0s"
-		}
-	}
-
-	statusStr := fmt.Sprintf(" #[fg=%s,bg=%s] %s %s %s#[default]", fgColor, bgColor, timeLeft, progressStr, curState.icon)
-
-	var blockStr string
-
 	{
+		hhmmString := func(d time.Duration) string {
+			haveHours := int(d.Hours()) > 0
+			haveMinutes := int(d.Minutes())%60 > 0
+			haveSeconds := int(d.Seconds())%60 > 0
+
+			switch {
+			case haveHours && haveMinutes:
+				return fmt.Sprintf("%dh%dm", int(d.Hours()), int(d.Minutes())%60)
+			case haveHours && !haveMinutes:
+				return fmt.Sprintf("%dh", int(d.Hours()))
+			case !haveHours && haveMinutes:
+				return fmt.Sprintf("%dm", int(d.Minutes())%60)
+			case !haveHours && !haveMinutes && haveSeconds:
+				return fmt.Sprintf("%ds", int(d.Seconds())%60)
+			default:
+				return "0s"
+			}
+		}
+
 		blocks, err := readBlocks(now)
 		if err != nil && !errors.Is(err, os.ErrNotExist) {
 			fmt.Printf("error reading blocks file: %v\n", err)
@@ -212,11 +153,76 @@ func main() {
 					blockStr += " " + hhmmString(next.Duration)
 				}
 			}
+		}
+	}
+
+	if timeLeft, active := eggTimer(now); active {
+		if len(os.Args) < 2 {
+			fgColor := fmt.Sprintf("color%d", eggTimerColor)
+			bgColor := "default"
+
+			if timeLeft < 30*time.Second {
+				bgColor = fgColor
+				fgColor = "color0"
+			}
+
+			statusStr := fmt.Sprintf(" #[fg=%s,bg=%s] %s %s#[default]", fgColor, bgColor, timeLeft, eggTimerIcon)
 
 			if blockStr != "" {
 				statusStr = blockStr + " |" + statusStr[1:]
 			}
+
+			fmt.Println(statusStr)
 		}
+		return
+	}
+
+	timeSinceMidnight := now.Sub(
+		time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local),
+	)
+
+	var totalStateDuration time.Duration
+
+	for _, s := range states {
+		totalStateDuration += s.duration
+	}
+
+	progressInCurrentCycle := timeSinceMidnight % totalStateDuration
+
+	var (
+		progress int
+		curState state
+		timeLeft time.Duration
+	)
+
+	var accStateDur time.Duration
+
+	for n, s := range states {
+		accStateDur += s.duration
+
+		if progressInCurrentCycle <= accStateDur {
+			progress = n + 1
+			curState = s
+			timeLeft = accStateDur - progressInCurrentCycle
+			break
+		}
+	}
+
+	timeLeft = timeLeft.Truncate(time.Second)
+	progressStr := strings.Repeat("■", progress) + strings.Repeat("□", len(states)-progress)
+
+	fgColor := fmt.Sprintf("color%d", curState.color)
+	bgColor := "default"
+
+	if timeLeft < 30*time.Second {
+		bgColor = fgColor
+		fgColor = "color0"
+	}
+
+	statusStr := fmt.Sprintf(" #[fg=%s,bg=%s] %s %s %s#[default]", fgColor, bgColor, timeLeft, progressStr, curState.icon)
+
+	if blockStr != "" {
+		statusStr = blockStr + " |" + statusStr[1:]
 	}
 
 	fmt.Println(statusStr)
