@@ -66,7 +66,7 @@ func main() {
 				fgColor = "color0"
 			}
 
-			fmt.Printf("#[fg=%s,bg=%s] %s %s#[default]", fgColor, bgColor, timeLeft, eggTimerIcon)
+			fmt.Printf(" #[fg=%s,bg=%s] %s %s#[default]\n", fgColor, bgColor, timeLeft, eggTimerIcon)
 		}
 		return
 	}
