@@ -219,8 +219,7 @@ func main() {
 		}
 	}
 
-	fmt.Print(statusStr)
-	fmt.Println()
+	fmt.Println(statusStr)
 }
 
 type Block struct {
