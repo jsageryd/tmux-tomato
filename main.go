@@ -151,12 +151,15 @@ func main() {
 			fgColor := fmt.Sprintf("color%d", eggTimerColor)
 			bgColor := "default"
 
+			var blinkStr string
+
 			if timeLeft < 30*time.Second {
+				blinkStr = fmt.Sprintf("#[fg=%s,blink,bg=%s]███ #[default]", fgColor, bgColor)
 				bgColor = fgColor
 				fgColor = "color0"
 			}
 
-			statusStr := fmt.Sprintf(" #[fg=%s,bg=%s] %s %s#[default]", fgColor, bgColor, timeLeft, eggTimerIcon)
+			statusStr := fmt.Sprintf(" %s#[fg=%s,bg=%s] %s %s#[default]", blinkStr, fgColor, bgColor, timeLeft, eggTimerIcon)
 
 			if blockStr != "" {
 				statusStr = blockStr + " |" + statusStr[1:]
@@ -204,12 +207,15 @@ func main() {
 	fgColor := fmt.Sprintf("color%d", curState.color)
 	bgColor := "default"
 
+	var blinkStr string
+
 	if timeLeft < 30*time.Second {
+		blinkStr = fmt.Sprintf("#[fg=%s,blink,bg=%s]███ #[default]", fgColor, bgColor)
 		bgColor = fgColor
 		fgColor = "color0"
 	}
 
-	statusStr := fmt.Sprintf(" #[fg=%s,bg=%s] %s %s %s#[default]", fgColor, bgColor, timeLeft, progressStr, curState.icon)
+	statusStr := fmt.Sprintf(" %s#[fg=%s,bg=%s] %s %s %s#[default]", blinkStr, fgColor, bgColor, timeLeft, progressStr, curState.icon)
 
 	if blockStr != "" {
 		statusStr = blockStr + " |" + statusStr[1:]
