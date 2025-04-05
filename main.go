@@ -154,7 +154,7 @@ func main() {
 			var blinkStr string
 
 			if timeLeft < 30*time.Second {
-				blinkStr = fmt.Sprintf("#[fg=%s,blink,bg=%s]███ #[default]", fgColor, bgColor)
+				blinkStr = fmt.Sprintf("#[fg=%s,blink,bg=%s]██████ #[default]", fgColor, bgColor)
 				bgColor = fgColor
 				fgColor = "color0"
 			}
@@ -210,7 +210,7 @@ func main() {
 	var blinkStr string
 
 	if timeLeft < 30*time.Second {
-		blinkStr = fmt.Sprintf("#[fg=%s,blink,bg=%s]███ #[default]", fgColor, bgColor)
+		blinkStr = fmt.Sprintf("#[fg=%s,blink,bg=%s]██████ #[default]", fgColor, bgColor)
 		bgColor = fgColor
 		fgColor = "color0"
 	}
