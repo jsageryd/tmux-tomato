@@ -22,7 +22,12 @@ type state struct {
 // states is a list of states that the timer cycles through.
 var states = []state{
 	{
-		duration: 50 * time.Minute,
+		duration: 25 * time.Minute,
+		color:    203,
+		icon:     "▘",
+	},
+	{
+		duration: 25 * time.Minute,
 		color:    203,
 		icon:     "▘",
 	},
