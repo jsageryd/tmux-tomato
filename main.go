@@ -204,6 +204,25 @@ func main() {
 	timeLeft = timeLeft.Truncate(time.Second)
 	progressStr := strings.Repeat("■", progress) + strings.Repeat("□", len(states)-progress)
 
+	progressInCurrentState := progressInCurrentCycle - (accStateDur - curState.duration)
+	minutesProgressed := int(progressInCurrentState.Minutes())
+	minutesTotal := int(curState.duration.Minutes())
+	if curState.duration%time.Minute != 0 {
+		minutesTotal++
+	}
+	curCircle := "○"
+	curMinute := progressInCurrentState % time.Minute
+	switch {
+	case curMinute >= 45*time.Second:
+		curCircle = "◕"
+	case curMinute >= 30*time.Second:
+		curCircle = "◑"
+	case curMinute >= 15*time.Second:
+		curCircle = "◔"
+	}
+	minutesLeft := minutesTotal - minutesProgressed
+	minuteSquares := strings.Repeat("●", minutesProgressed) + curCircle + strings.Repeat("◌", minutesLeft-1)
+
 	fgColor := fmt.Sprintf("color%d", curState.color)
 	bgColor := "default"
 
@@ -215,7 +234,7 @@ func main() {
 		fgColor = "color0"
 	}
 
-	statusStr := fmt.Sprintf(" %s#[fg=%s,bg=%s] %s %s %s#[default]", blinkStr, fgColor, bgColor, timeLeft, progressStr, curState.icon)
+	statusStr := fmt.Sprintf(" %s#[fg=%s,bg=%s] %s %d/%dm %s %s#[default]", blinkStr, fgColor, bgColor, minuteSquares, minutesProgressed, minutesTotal, progressStr, curState.icon)
 
 	if blockStr != "" {
 		statusStr = blockStr + " |" + statusStr[1:]
