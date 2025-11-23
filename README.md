@@ -72,13 +72,13 @@ tmux-tomato prints the currently active focus block and/or the next focus block.
 ## Examples
 
 ### Normal mode
-<img src="img/state-01.png" width="290px">
-<img src="img/state-02.png" width="290px">
-<img src="img/state-03.png" width="290px">
-<img src="img/state-04.png" width="290px">
+<img src="img/state-01.png" width="475px">
+<img src="img/state-02.png" width="475px">
+<img src="img/state-03.png" width="475px">
+<img src="img/state-04.png" width="475px">
 
 ### Focus blocks
-<img src="img/state-focus.png" width="710px">
+<img src="img/state-focus.png" width="750px">
 
 ### Egg timer
-<img src="img/state-egg.png" width="290px">
+<img src="img/state-egg.png" width="475px">
