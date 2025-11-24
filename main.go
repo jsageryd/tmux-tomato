@@ -299,6 +299,10 @@ func readBlocks(now time.Time) ([]Block, error) {
 			continue
 		}
 
+		if strings.HasPrefix(strings.TrimSpace(line), "#") {
+			continue
+		}
+
 		firstSpace := strings.Index(line, " ")
 		lastSpace := strings.LastIndex(line, " ")
 
