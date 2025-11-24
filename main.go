@@ -147,10 +147,12 @@ func main() {
 					}
 				}
 
-				blockStr += fmt.Sprintf(" #[fg=%s,bg=%s]%s %s %s", nextBlockFGColor, nextBlockBGColor, triangle, next.Start.Format("15:04"), next.Desc)
+				if !nextIsFirst || (nextIsFirst && now.After(cur.end())) {
+					blockStr += fmt.Sprintf(" #[fg=%s,bg=%s]%s %s %s", nextBlockFGColor, nextBlockBGColor, triangle, next.Start.Format("15:04"), next.Desc)
 
-				if next.Duration > 0 {
-					blockStr += " " + hhmmString(next.Duration)
+					if next.Duration > 0 {
+						blockStr += " " + hhmmString(next.Duration)
+					}
 				}
 			}
 		}
