@@ -306,13 +306,21 @@ func readBlocks(now time.Time) ([]Block, error) {
 		firstSpace := strings.Index(line, " ")
 		lastSpace := strings.LastIndex(line, " ")
 
-		if firstSpace == -1 || lastSpace == -1 || firstSpace == lastSpace {
-			return nil, fmt.Errorf(`line %d: invalid format, want e.g. "10:00 Coffee break 1h"`, lineNo)
+		if firstSpace == -1 {
+			return nil, fmt.Errorf(`line %d: invalid format, want "10:00 Coffee break" or "10:00 Coffee break 1h"`, lineNo)
 		}
 
 		startTimeStr := line[:firstSpace]
-		description := line[firstSpace+1 : lastSpace]
-		durationStr := line[lastSpace+1:]
+
+		var description string
+		var durationStr string
+
+		if firstSpace != lastSpace {
+			description = line[firstSpace+1 : lastSpace]
+			durationStr = line[lastSpace+1:]
+		} else {
+			description = line[firstSpace+1:]
+		}
 
 		start, err := time.Parse("15:04", startTimeStr)
 		if err != nil {
@@ -337,7 +345,10 @@ func readBlocks(now time.Time) ([]Block, error) {
 
 		duration, err := time.ParseDuration(durationStr)
 		if err != nil {
-			return nil, fmt.Errorf("line %d: cannot parse %q as a duration", lineNo, durationStr)
+			if durationStr != "" {
+				description += " " + durationStr
+			}
+			duration = -1
 		}
 
 		blocks = append(blocks, Block{
@@ -345,6 +356,16 @@ func readBlocks(now time.Time) ([]Block, error) {
 			Desc:     description,
 			Duration: duration,
 		})
+	}
+
+	for n := range blocks {
+		if blocks[n].Duration == -1 {
+			if n+1 < len(blocks) {
+				blocks[n].Duration = blocks[(n + 1)].Start.Sub(blocks[n].Start)
+			} else {
+				blocks[n].Duration = blocks[0].Start.AddDate(0, 0, 1).Sub(blocks[n].Start)
+			}
+		}
 	}
 
 	if len(blocks) > 0 {

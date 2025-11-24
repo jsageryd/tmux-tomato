@@ -54,7 +54,7 @@ blocks from it. Each line in the file represents one block. Example:
 ```
 09:00 Project A 3h
 10:30 Meeting 30m
-11:30 Lunch 1h
+11:30 Lunch
 13:00 Project B 4h
 ```
 
@@ -65,6 +65,7 @@ tmux-tomato prints the currently active focus block and/or the next focus block.
   the overlapping block ends.
 - The focus blocks may not span more than 24 hours.
 - The focus blocks may span over midnight.
+- A focus block without a duration continues until the next focus block starts.
 - `□` denotes the first block of the day. `▶` and `▷` denote an upcoming block.
   `▶` means the next block starts directly after the current block ends. `▷`
   indicates that there is a gap between the current block and the next block.
