@@ -177,7 +177,7 @@ func main() {
 				statusStr = blockStr + " |" + statusStr[1:]
 			}
 
-			fmt.Println(statusStr)
+			fmt.Println(sseg(statusStr))
 		}
 		return
 	}
@@ -252,7 +252,7 @@ func main() {
 		statusStr = blockStr + " |" + statusStr[1:]
 	}
 
-	fmt.Println(statusStr)
+	fmt.Println(sseg(statusStr))
 }
 
 type Block struct {
@@ -536,4 +536,14 @@ func eggTimer(now time.Time) (timeLeft time.Duration, active bool) {
 	}
 
 	return 0, false
+}
+
+func sseg(s string) string {
+	return strings.Map(func(r rune) rune {
+		if '0' <= r && r <= '9' {
+			return r - '0' + '🯰'
+		}
+
+		return r
+	}, s)
 }
