@@ -19,31 +19,12 @@ type state struct {
 	icon     string
 }
 
-// states is a list of states that the timer cycles through.
-var states = []state{
-	{
-		duration: 25 * time.Minute,
-		color:    203,
-		icon:     "▘",
-	},
-	{
-		duration: 5 * time.Minute,
-		color:    191,
-		icon:     "▖",
-	},
-	{
-		duration: 25 * time.Minute,
-		color:    203,
-		icon:     "▘",
-	},
-	{
-		duration: 5 * time.Minute,
-		color:    191,
-		icon:     "▖",
-	},
-}
-
 const (
+	workColor = 203
+	workIcon  = "▘"
+	breakColor = 191
+	breakIcon  = "▖"
+
 	eggTimerColor = 39
 	eggTimerIcon  = "▌"
 )
@@ -53,8 +34,25 @@ type eggTimerState struct {
 	Duration time.Duration `json:"duration"`
 }
 
+type sessionState struct {
+	Name     string        `json:"name"`
+	Start    time.Time     `json:"start"`
+	Duration time.Duration `json:"duration"`
+}
+
 func main() {
 	now := time.Now()
+
+	if len(os.Args) >= 2 {
+		if os.Args[1] == "stop" {
+			handleStop()
+			return
+		}
+		if len(os.Args) >= 3 {
+			handleStart(now)
+			return
+		}
+	}
 
 	var blockStr string
 
@@ -182,77 +180,84 @@ func main() {
 		return
 	}
 
-	timeSinceMidnight := now.Sub(
-		time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local),
-	)
+	sess, sessionActive := readSession(now)
 
-	var totalStateDuration time.Duration
+	if sessionActive {
+		cycles := generateCycles(sess.Duration)
+		elapsed := now.Sub(sess.Start)
 
-	for _, s := range states {
-		totalStateDuration += s.duration
-	}
-
-	progressInCurrentCycle := timeSinceMidnight % totalStateDuration
-
-	var (
-		progress int
-		curState state
-		timeLeft time.Duration
-	)
-
-	var accStateDur time.Duration
-
-	for n, s := range states {
-		accStateDur += s.duration
-
-		if progressInCurrentCycle <= accStateDur {
-			progress = n + 1
-			curState = s
-			timeLeft = accStateDur - progressInCurrentCycle
-			break
+		// Clamp elapsed to session duration for cycle calculation
+		displayElapsed := elapsed
+		if displayElapsed > sess.Duration {
+			displayElapsed = sess.Duration
 		}
+
+		sessionTimeLeft := (sess.Duration - elapsed).Truncate(time.Second)
+		if sessionTimeLeft < 0 {
+			sessionTimeLeft = 0
+		}
+
+		var curCycleIdx int
+		var curCycle state
+		var accDur time.Duration
+
+		for i, c := range cycles {
+			accDur += c.duration
+			if displayElapsed <= accDur {
+				curCycleIdx = i
+				curCycle = c
+				break
+			}
+		}
+
+		progressInCycle := curCycle.duration - (accDur - displayElapsed)
+		minutesProgressed := int(progressInCycle.Minutes())
+		minutesTotal := int(curCycle.duration.Minutes())
+		if curCycle.duration%time.Minute != 0 {
+			minutesTotal++
+		}
+		curCircle := "○"
+		curMinute := progressInCycle % time.Minute
+		switch {
+		case curMinute >= 45*time.Second:
+			curCircle = "◕"
+		case curMinute >= 30*time.Second:
+			curCircle = "◑"
+		case curMinute >= 15*time.Second:
+			curCircle = "◔"
+		}
+		minutesLeft := minutesTotal - minutesProgressed
+		minuteSquares := strings.Repeat("●", minutesProgressed) + curCircle + strings.Repeat("◌", minutesLeft-1)
+
+		progressStr := strings.Repeat("■", curCycleIdx+1) + strings.Repeat("□", len(cycles)-curCycleIdx-1)
+
+		fgColor := fmt.Sprintf("color%d", curCycle.color)
+		bgColor := "default"
+
+		var blinkStr string
+
+		if sessionTimeLeft < 30*time.Second {
+			blinkStr = fmt.Sprintf("#[fg=%s,blink,bg=%s]██████ #[default]", fgColor, bgColor)
+			bgColor = fgColor
+			fgColor = "color0"
+		}
+
+		statusStr := fmt.Sprintf(" %s#[fg=%s,bg=%s] %s %s %d/%dm %s %s#[default]", blinkStr, fgColor, bgColor, sess.Name, minuteSquares, minutesProgressed, minutesTotal, progressStr, curCycle.icon)
+
+		if blockStr != "" {
+			statusStr = blockStr + " |" + statusStr[1:]
+		}
+
+		fmt.Println(statusStr)
+	} else {
+		statusStr := " #[fg=color179,bg=default] █ #[default]"
+
+		if blockStr != "" {
+			statusStr = blockStr + " |" + statusStr[1:]
+		}
+
+		fmt.Println(statusStr)
 	}
-
-	timeLeft = timeLeft.Truncate(time.Second)
-	progressStr := strings.Repeat("■", progress) + strings.Repeat("□", len(states)-progress)
-
-	progressInCurrentState := progressInCurrentCycle - (accStateDur - curState.duration)
-	minutesProgressed := int(progressInCurrentState.Minutes())
-	minutesTotal := int(curState.duration.Minutes())
-	if curState.duration%time.Minute != 0 {
-		minutesTotal++
-	}
-	curCircle := "○"
-	curMinute := progressInCurrentState % time.Minute
-	switch {
-	case curMinute >= 45*time.Second:
-		curCircle = "◕"
-	case curMinute >= 30*time.Second:
-		curCircle = "◑"
-	case curMinute >= 15*time.Second:
-		curCircle = "◔"
-	}
-	minutesLeft := minutesTotal - minutesProgressed
-	minuteSquares := strings.Repeat("●", minutesProgressed) + curCircle + strings.Repeat("◌", minutesLeft-1)
-
-	fgColor := fmt.Sprintf("color%d", curState.color)
-	bgColor := "default"
-
-	var blinkStr string
-
-	if timeLeft < 30*time.Second {
-		blinkStr = fmt.Sprintf("#[fg=%s,blink,bg=%s]██████ #[default]", fgColor, bgColor)
-		bgColor = fgColor
-		fgColor = "color0"
-	}
-
-	statusStr := fmt.Sprintf(" %s#[fg=%s,bg=%s] %s %d/%dm %s %s#[default]", blinkStr, fgColor, bgColor, minuteSquares, minutesProgressed, minutesTotal, progressStr, curState.icon)
-
-	if blockStr != "" {
-		statusStr = blockStr + " |" + statusStr[1:]
-	}
-
-	fmt.Println(statusStr)
 }
 
 type Block struct {
@@ -463,6 +468,114 @@ func linearizeBlocks(blocks []Block) []Block {
 	}
 
 	return linear
+}
+
+func handleStart(now time.Time) {
+	durationStr := os.Args[len(os.Args)-1]
+	duration, err := time.ParseDuration(durationStr)
+	if err != nil {
+		fmt.Printf("invalid duration: %s\n", durationStr)
+		os.Exit(1)
+	}
+
+	name := strings.Join(os.Args[1:len(os.Args)-1], " ")
+
+	sess := sessionState{
+		Name:     name,
+		Start:    now,
+		Duration: duration,
+	}
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Printf("error finding home directory: %v\n", err)
+		os.Exit(1)
+	}
+
+	sessionFile := filepath.Join(home, ".tmux-tomato", "session")
+
+	b, err := json.Marshal(sess)
+	if err != nil {
+		fmt.Printf("error marshalling session state: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err := os.MkdirAll(filepath.Dir(sessionFile), 0o777); err != nil {
+		fmt.Printf("error creating directory: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err := os.WriteFile(sessionFile, b, 0o666); err != nil {
+		fmt.Printf("error writing session state: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+func handleStop() {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Printf("error finding home directory: %v\n", err)
+		os.Exit(1)
+	}
+
+	sessionFile := filepath.Join(home, ".tmux-tomato", "session")
+
+	if err := os.Remove(sessionFile); err != nil && !os.IsNotExist(err) {
+		fmt.Printf("error removing session state: %v\n", err)
+		os.Exit(1)
+	}
+
+	os.Remove(filepath.Dir(sessionFile))
+}
+
+func readSession(now time.Time) (sessionState, bool) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Printf("error finding home directory: %v\n", err)
+		os.Exit(1)
+	}
+
+	sessionFile := filepath.Join(home, ".tmux-tomato", "session")
+
+	b, err := os.ReadFile(sessionFile)
+	if err != nil {
+		return sessionState{}, false
+	}
+
+	var sess sessionState
+	if err := json.Unmarshal(b, &sess); err != nil {
+		fmt.Printf("error unmarshalling session state: %v\n", err)
+		os.Exit(1)
+	}
+
+	if now.After(sess.Start.Add(sess.Duration + 5*time.Second)) {
+		os.Remove(sessionFile)
+		os.Remove(filepath.Dir(sessionFile))
+		return sessionState{}, false
+	}
+
+	return sess, true
+}
+
+func generateCycles(totalDuration time.Duration) []state {
+	var cycles []state
+	remaining := totalDuration
+
+	for remaining > 0 {
+		work := min(25*time.Minute, remaining)
+		cycles = append(cycles, state{duration: work, color: workColor, icon: workIcon})
+		remaining -= work
+
+		if remaining <= 0 {
+			break
+		}
+
+		brk := min(5*time.Minute, remaining)
+		cycles = append(cycles, state{duration: brk, color: breakColor, icon: breakIcon})
+		remaining -= brk
+	}
+
+	return cycles
 }
 
 func eggTimer(now time.Time) (timeLeft time.Duration, active bool) {
