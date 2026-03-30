@@ -210,16 +210,7 @@ func main() {
 		minutesLeft := minutesTotal - minutesProgressed
 		minuteSquares := strings.Repeat("●", minutesProgressed) + curCircle + strings.Repeat("◌", minutesLeft-1)
 
-		var progressParts []string
-		for i, c := range cycles {
-			color := fmt.Sprintf("color%d", c.color)
-			if i <= curCycleIdx {
-				progressParts = append(progressParts, fmt.Sprintf("#[fg=%s]■", color))
-			} else {
-				progressParts = append(progressParts, fmt.Sprintf("#[fg=%s]□", color))
-			}
-		}
-		progressStr := strings.Join(progressParts, "")
+		progressStr := strings.Repeat("■", curCycleIdx+1) + strings.Repeat("□", len(cycles)-curCycleIdx-1)
 
 		fgColor := fmt.Sprintf("color%d", curCycle.color)
 		bgColor := "default"
@@ -232,7 +223,11 @@ func main() {
 			fgColor = "color0"
 		}
 
-		statusStr := fmt.Sprintf(" %s#[fg=%s,bg=%s] %s %s %s %s#[fg=%s] %s#[default]", blinkStr, fgColor, bgColor, sess.Name, hhmmString(sessionTimeLeft), minuteSquares, progressStr, fgColor, curCycle.icon)
+		endTime := sess.Start.Add(sess.Duration)
+		if endTime.Truncate(time.Minute) != endTime {
+			endTime = endTime.Truncate(time.Minute).Add(time.Minute)
+		}
+		statusStr := fmt.Sprintf(" %s#[fg=%s,bg=%s] %s until %s %s %d/%dm %s %s#[default]", blinkStr, fgColor, bgColor, sess.Name, endTime.Format("15:04"), minuteSquares, minutesProgressed, minutesTotal, progressStr, curCycle.icon)
 
 		if blockStr != "" {
 			statusStr = blockStr + " |" + statusStr[1:]
@@ -552,7 +547,7 @@ func generateCycles(totalDuration time.Duration) []state {
 	remaining := totalDuration
 
 	for remaining > 0 {
-		work := min(25*time.Minute, remaining)
+		work := min(20*time.Minute, remaining)
 		cycles = append(cycles, state{duration: work, color: workColor, icon: workIcon})
 		remaining -= work
 
@@ -560,7 +555,7 @@ func generateCycles(totalDuration time.Duration) []state {
 			break
 		}
 
-		brk := min(5*time.Minute, remaining)
+		brk := min(10*time.Minute, remaining)
 		cycles = append(cycles, state{duration: brk, color: breakColor, icon: breakIcon})
 		remaining -= brk
 	}
