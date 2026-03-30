@@ -220,7 +220,7 @@ func main() {
 		if endTime.Truncate(time.Minute) != endTime {
 			endTime = endTime.Truncate(time.Minute).Add(time.Minute)
 		}
-		statusStr := fmt.Sprintf(" %s#[fg=%s,bg=%s] %s until %s %s %d/%dm %s %s#[default]", blinkStr, fgColor, bgColor, sess.Name, endTime.Format("15:04"), minuteSquares, minutesProgressed, minutesTotal, progressStr, curCycle.icon)
+		statusStr := fmt.Sprintf(" %s#[fg=%s,bg=%s] %s → %s %s %d/%dm %s %s#[default]", blinkStr, fgColor, bgColor, sess.Name, endTime.Format("15:04"), minuteSquares, minutesProgressed, minutesTotal, progressStr, curCycle.icon)
 
 		if blockStr != "" {
 			statusStr = blockStr + " |" + statusStr[1:]
