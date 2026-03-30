@@ -200,7 +200,7 @@ func main() {
 		minutesLeft := minutesTotal - minutesProgressed
 
 		fgColor := fmt.Sprintf("color%d", curCycle.color)
-		dimColor := fmt.Sprintf("color%d", 245)
+		dimColor := fmt.Sprintf("color%d", 241)
 		bgColor := "default"
 
 		progressStr := strings.Repeat("■", curCycleIdx+1) + strings.Repeat("□", len(cycles)-curCycleIdx-1)
