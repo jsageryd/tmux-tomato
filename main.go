@@ -207,7 +207,8 @@ func main() {
 
 		var blinkStr string
 
-		if sessionTimeLeft < 30*time.Second {
+		cycleTimeLeft := curCycle.duration - progressInCycle
+			if cycleTimeLeft < 30*time.Second {
 			blinkStr = fmt.Sprintf("#[fg=%s,blink,bg=%s]██████ #[default]", fgColor, bgColor)
 			bgColor = fgColor
 			fgColor = "color0"
