@@ -16,16 +16,13 @@ import (
 type state struct {
 	duration time.Duration
 	color    int
-	dimColor int
 	icon     string
 }
 
 const (
-	workColor    = 203
-	workDimColor = 240
-	workIcon     = "▘"
-	breakColor    = 191
-	breakDimColor = 240
+	workColor = 203
+	workIcon  = "▘"
+	breakColor = 191
 	breakIcon     = "▖"
 
 	eggTimerColor = 39
@@ -203,7 +200,7 @@ func main() {
 		minutesLeft := minutesTotal - minutesProgressed
 
 		fgColor := fmt.Sprintf("color%d", curCycle.color)
-		dimColor := fmt.Sprintf("color%d", curCycle.dimColor)
+		dimColor := fmt.Sprintf("color%d", 245)
 		bgColor := "default"
 
 		progressStr := strings.Repeat("■", curCycleIdx+1) + strings.Repeat("□", len(cycles)-curCycleIdx-1)
@@ -544,7 +541,7 @@ func generateCycles(totalDuration time.Duration) []state {
 
 	for remaining > 0 {
 		work := min(20*time.Minute, remaining)
-		cycles = append(cycles, state{duration: work, color: workColor, dimColor: workDimColor, icon: workIcon})
+		cycles = append(cycles, state{duration: work, color: workColor, icon: workIcon})
 		remaining -= work
 
 		if remaining <= 0 {
@@ -552,7 +549,7 @@ func generateCycles(totalDuration time.Duration) []state {
 		}
 
 		brk := min(10*time.Minute, remaining)
-		cycles = append(cycles, state{duration: brk, color: breakColor, dimColor: breakDimColor, icon: breakIcon})
+		cycles = append(cycles, state{duration: brk, color: breakColor, icon: breakIcon})
 		remaining -= brk
 	}
 
