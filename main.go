@@ -206,8 +206,6 @@ func main() {
 		dimColor := fmt.Sprintf("color%d", curCycle.dimColor)
 		bgColor := "default"
 
-		minuteSquares := fmt.Sprintf("#[fg=%s]%s#[fg=%s]%s#[fg=%s]", fgColor, strings.Repeat("▬", minutesProgressed), dimColor, strings.Repeat("▬", minutesLeft), fgColor)
-
 		progressStr := strings.Repeat("■", curCycleIdx+1) + strings.Repeat("□", len(cycles)-curCycleIdx-1)
 
 		var blinkStr string
@@ -216,7 +214,10 @@ func main() {
 			blinkStr = fmt.Sprintf("#[fg=%s,blink,bg=%s]██████ #[default]", fgColor, bgColor)
 			bgColor = fgColor
 			fgColor = "color0"
+			dimColor = fgColor
 		}
+
+		minuteSquares := fmt.Sprintf("#[fg=%s]%s#[fg=%s]%s#[fg=%s]", fgColor, strings.Repeat("▬", minutesProgressed), dimColor, strings.Repeat("▬", minutesLeft), fgColor)
 
 		endTime := sess.Start.Add(sess.Duration)
 		if endTime.Truncate(time.Minute) != endTime {
