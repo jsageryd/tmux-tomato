@@ -16,14 +16,17 @@ import (
 type state struct {
 	duration time.Duration
 	color    int
+	dimColor int
 	icon     string
 }
 
 const (
-	workColor = 203
-	workIcon  = "▘"
-	breakColor = 191
-	breakIcon  = "▖"
+	workColor    = 203
+	workDimColor = 240
+	workIcon     = "▘"
+	breakColor    = 191
+	breakDimColor = 240
+	breakIcon     = "▖"
 
 	eggTimerColor = 39
 	eggTimerIcon  = "▌"
@@ -197,23 +200,15 @@ func main() {
 		if curCycle.duration%time.Minute != 0 {
 			minutesTotal++
 		}
-		curCircle := "○"
-		curMinute := progressInCycle % time.Minute
-		switch {
-		case curMinute >= 45*time.Second:
-			curCircle = "◕"
-		case curMinute >= 30*time.Second:
-			curCircle = "◑"
-		case curMinute >= 15*time.Second:
-			curCircle = "◔"
-		}
 		minutesLeft := minutesTotal - minutesProgressed
-		minuteSquares := strings.Repeat("●", minutesProgressed) + curCircle + strings.Repeat("◌", minutesLeft-1)
-
-		progressStr := strings.Repeat("■", curCycleIdx+1) + strings.Repeat("□", len(cycles)-curCycleIdx-1)
 
 		fgColor := fmt.Sprintf("color%d", curCycle.color)
+		dimColor := fmt.Sprintf("color%d", curCycle.dimColor)
 		bgColor := "default"
+
+		minuteSquares := fmt.Sprintf("#[fg=%s]%s#[fg=%s]%s#[fg=%s]", fgColor, strings.Repeat("▬", minutesProgressed), dimColor, strings.Repeat("▬", minutesLeft), fgColor)
+
+		progressStr := strings.Repeat("■", curCycleIdx+1) + strings.Repeat("□", len(cycles)-curCycleIdx-1)
 
 		var blinkStr string
 
@@ -548,7 +543,7 @@ func generateCycles(totalDuration time.Duration) []state {
 
 	for remaining > 0 {
 		work := min(20*time.Minute, remaining)
-		cycles = append(cycles, state{duration: work, color: workColor, icon: workIcon})
+		cycles = append(cycles, state{duration: work, color: workColor, dimColor: workDimColor, icon: workIcon})
 		remaining -= work
 
 		if remaining <= 0 {
@@ -556,7 +551,7 @@ func generateCycles(totalDuration time.Duration) []state {
 		}
 
 		brk := min(10*time.Minute, remaining)
-		cycles = append(cycles, state{duration: brk, color: breakColor, icon: breakIcon})
+		cycles = append(cycles, state{duration: brk, color: breakColor, dimColor: breakDimColor, icon: breakIcon})
 		remaining -= brk
 	}
 
