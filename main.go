@@ -20,9 +20,9 @@ type state struct {
 }
 
 const (
-	workColor = 203
+	workColor = 117
 	workIcon  = "▘"
-	breakColor = 191
+	breakColor = 192
 	breakIcon     = "▖"
 
 	eggTimerColor = 39
