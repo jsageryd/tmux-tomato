@@ -63,25 +63,6 @@ func main() {
 	nextBlockBGColor := "default"
 
 	{
-		hhmmString := func(d time.Duration) string {
-			haveHours := int(d.Hours()) > 0
-			haveMinutes := int(d.Minutes())%60 > 0
-			haveSeconds := int(d.Seconds())%60 > 0
-
-			switch {
-			case haveHours && haveMinutes:
-				return fmt.Sprintf("%dh%dm", int(d.Hours()), int(d.Minutes())%60)
-			case haveHours && !haveMinutes:
-				return fmt.Sprintf("%dh", int(d.Hours()))
-			case !haveHours && haveMinutes:
-				return fmt.Sprintf("%dm", int(d.Minutes())%60)
-			case !haveHours && !haveMinutes && haveSeconds:
-				return fmt.Sprintf("%ds", int(d.Seconds())%60)
-			default:
-				return "0s"
-			}
-		}
-
 		blocks, err := readBlocks(now)
 		if err != nil && !errors.Is(err, os.ErrNotExist) {
 			fmt.Printf("error reading blocks file: %v\n", err)
@@ -229,7 +210,16 @@ func main() {
 		minutesLeft := minutesTotal - minutesProgressed
 		minuteSquares := strings.Repeat("●", minutesProgressed) + curCircle + strings.Repeat("◌", minutesLeft-1)
 
-		progressStr := strings.Repeat("■", curCycleIdx+1) + strings.Repeat("□", len(cycles)-curCycleIdx-1)
+		var progressParts []string
+		for i, c := range cycles {
+			color := fmt.Sprintf("color%d", c.color)
+			if i <= curCycleIdx {
+				progressParts = append(progressParts, fmt.Sprintf("#[fg=%s]■", color))
+			} else {
+				progressParts = append(progressParts, fmt.Sprintf("#[fg=%s]□", color))
+			}
+		}
+		progressStr := strings.Join(progressParts, "")
 
 		fgColor := fmt.Sprintf("color%d", curCycle.color)
 		bgColor := "default"
@@ -242,7 +232,7 @@ func main() {
 			fgColor = "color0"
 		}
 
-		statusStr := fmt.Sprintf(" %s#[fg=%s,bg=%s] %s %s %d/%dm %s %s#[default]", blinkStr, fgColor, bgColor, sess.Name, minuteSquares, minutesProgressed, minutesTotal, progressStr, curCycle.icon)
+		statusStr := fmt.Sprintf(" %s#[fg=%s,bg=%s] %s %s %s %s#[fg=%s] %s#[default]", blinkStr, fgColor, bgColor, sess.Name, hhmmString(sessionTimeLeft), minuteSquares, progressStr, fgColor, curCycle.icon)
 
 		if blockStr != "" {
 			statusStr = blockStr + " |" + statusStr[1:]
@@ -576,6 +566,25 @@ func generateCycles(totalDuration time.Duration) []state {
 	}
 
 	return cycles
+}
+
+func hhmmString(d time.Duration) string {
+	haveHours := int(d.Hours()) > 0
+	haveMinutes := int(d.Minutes())%60 > 0
+	haveSeconds := int(d.Seconds())%60 > 0
+
+	switch {
+	case haveHours && haveMinutes:
+		return fmt.Sprintf("%dh%dm", int(d.Hours()), int(d.Minutes())%60)
+	case haveHours && !haveMinutes:
+		return fmt.Sprintf("%dh", int(d.Hours()))
+	case !haveHours && haveMinutes:
+		return fmt.Sprintf("%dm", int(d.Minutes())%60)
+	case !haveHours && !haveMinutes && haveSeconds:
+		return fmt.Sprintf("%ds", int(d.Seconds())%60)
+	default:
+		return "0s"
+	}
 }
 
 func eggTimer(now time.Time) (timeLeft time.Duration, active bool) {
