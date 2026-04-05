@@ -541,7 +541,7 @@ func generateCycles(totalDuration time.Duration) []state {
 	remaining := totalDuration
 
 	for remaining > 0 {
-		work := min(20*time.Minute, remaining)
+		work := min(25*time.Minute, remaining)
 		cycles = append(cycles, state{duration: work, color: workColor, icon: workIcon})
 		remaining -= work
 
@@ -549,7 +549,7 @@ func generateCycles(totalDuration time.Duration) []state {
 			break
 		}
 
-		brk := min(10*time.Minute, remaining)
+		brk := min(5*time.Minute, remaining)
 		cycles = append(cycles, state{duration: brk, color: breakColor, icon: breakIcon})
 		remaining -= brk
 	}
