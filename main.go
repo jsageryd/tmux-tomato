@@ -20,10 +20,10 @@ type state struct {
 }
 
 const (
-	workColor = 117
-	workIcon  = "▘"
+	workColor  = 117
+	workIcon   = "▘"
 	breakColor = 192
-	breakIcon     = "▖"
+	breakIcon  = "▖"
 
 	eggTimerColor = 39
 	eggTimerIcon  = "▌"
@@ -208,7 +208,7 @@ func main() {
 		var blinkStr string
 
 		cycleTimeLeft := curCycle.duration - progressInCycle
-			if cycleTimeLeft < 30*time.Second {
+		if cycleTimeLeft < 30*time.Second {
 			blinkStr = fmt.Sprintf("#[fg=%s,blink,bg=%s]██████ #[default]", fgColor, bgColor)
 			bgColor = fgColor
 			fgColor = "color0"
