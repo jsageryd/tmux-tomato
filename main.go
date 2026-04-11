@@ -203,7 +203,7 @@ func main() {
 		dimColor := fmt.Sprintf("color%d", 241)
 		bgColor := "default"
 
-		progressStr := strings.Repeat("■", curCycleIdx+1) + strings.Repeat("□", len(cycles)-curCycleIdx-1)
+		progressStr := strings.Repeat("■", curCycleIdx) + "◩" + strings.Repeat("□", len(cycles)-curCycleIdx-1)
 
 		var blinkStr string
 
