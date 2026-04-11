@@ -451,9 +451,9 @@ func linearizeBlocks(blocks []Block) []Block {
 
 func handleStart(now time.Time) {
 	durationStr := os.Args[len(os.Args)-1]
-	duration, err := time.ParseDuration(durationStr)
+	duration, err := parseDurationOrTimestamp(durationStr, now)
 	if err != nil {
-		fmt.Printf("invalid duration: %s\n", durationStr)
+		fmt.Printf("%s\n", err)
 		os.Exit(1)
 	}
 
@@ -576,6 +576,28 @@ func hhmmString(d time.Duration) string {
 	}
 }
 
+func parseDurationOrTimestamp(s string, now time.Time) (time.Duration, error) {
+	if d, err := time.ParseDuration(s); err == nil {
+		return d, nil
+	}
+
+	if t, err := time.Parse("15:04", s); err == nil {
+		target := time.Date(
+			now.Year(), now.Month(), now.Day(),
+			t.Hour(), t.Minute(), 0, 0,
+			now.Location(),
+		)
+
+		if !target.After(now) {
+			target = target.AddDate(0, 0, 1)
+		}
+
+		return target.Sub(now).Truncate(time.Second), nil
+	}
+
+	return 0, fmt.Errorf("invalid duration or timestamp: %s (expected e.g. 25m, 1h30m, or 14:30)", s)
+}
+
 func eggTimer(now time.Time) (timeLeft time.Duration, active bool) {
 	eggTimerActive := func(ts eggTimerState) bool {
 		return ts.Duration > 0 && ts.Start.Add(ts.Duration+5*time.Second).After(now)
@@ -592,9 +614,9 @@ func eggTimer(now time.Time) (timeLeft time.Duration, active bool) {
 	stateFile := filepath.Join(home, ".tmux-tomato", "timer")
 
 	if len(os.Args) == 2 {
-		duration, err := time.ParseDuration(os.Args[1])
+		duration, err := parseDurationOrTimestamp(os.Args[1], now)
 		if err != nil {
-			fmt.Printf("Usage: tmux-tomato [duration]\nSpecify duration (e.g. 2h, 25m, 5m30s) to set egg timer.\n")
+			fmt.Printf("Usage: tmux-tomato [duration|HH:MM]\nSpecify duration (e.g. 2h, 25m, 5m30s) or timestamp (e.g. 14:30) to set egg timer.\n")
 			os.Exit(1)
 		}
 
