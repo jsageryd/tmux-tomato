@@ -592,7 +592,10 @@ func parseDurationOrTimestamp(s string, now time.Time) (time.Duration, error) {
 			target = target.AddDate(0, 0, 1)
 		}
 
-		return target.Sub(now).Truncate(time.Second), nil
+		// Return the exact difference so that now.Add(duration) lands precisely
+		// on the target timestamp. Truncating here would drop now's sub-second
+		// part and make the session end a fraction of a second early.
+		return target.Sub(now), nil
 	}
 
 	return 0, fmt.Errorf("invalid duration or timestamp: %s (expected e.g. 25m, 1h30m, or 14:30)", s)
