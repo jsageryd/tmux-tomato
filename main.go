@@ -203,16 +203,38 @@ func main() {
 		dimColor := fmt.Sprintf("color%d", 241)
 		bgColor := "default"
 
-		progressStr := strings.Repeat("■", curCycleIdx) + "◩" + strings.Repeat("□", len(cycles)-curCycleIdx-1)
-
 		var blinkStr string
 
 		cycleTimeLeft := curCycle.duration - progressInCycle
-		if cycleTimeLeft < 30*time.Second {
+		blinking := cycleTimeLeft < 30*time.Second
+		if blinking {
 			blinkStr = fmt.Sprintf("#[fg=%s,blink,bg=%s]██████ #[default]", fgColor, bgColor)
 			bgColor = fgColor
 			fgColor = "color0"
 			dimColor = fgColor
+		}
+
+		var progressStr string
+
+		for i, c := range cycles {
+			box := "□"
+			switch {
+			case i < curCycleIdx:
+				box = "■"
+			case i == curCycleIdx:
+				box = "◩"
+			}
+
+			if blinking {
+				progressStr += box
+				continue
+			}
+
+			progressStr += fmt.Sprintf("#[fg=color%d]%s", c.color, box)
+		}
+
+		if !blinking {
+			progressStr += fmt.Sprintf("#[fg=%s]", fgColor)
 		}
 
 		minuteSquares := fmt.Sprintf("#[fg=%s]%s#[fg=%s]%s#[fg=%s]", fgColor, strings.Repeat("▬", minutesProgressed), dimColor, strings.Repeat("▬", minutesLeft), fgColor)
